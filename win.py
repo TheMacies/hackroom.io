@@ -7,6 +7,9 @@ mail = "test@test.pl"
 name = "your name"
 university = "PW"
 
+
+# A dictionary [number_of_bytes] => [number represented by the image]
+
 d = {693: 2, 737: 8,
      895: 4, 692: 9,
      1032: 6, 555: 6,
@@ -40,6 +43,8 @@ proxies = {
   'https': 'http://127.0.0.1:8080',
 }
 headers = {"User-Agent" : "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.82 Safari/537.36"}
+
+#getting all the credentials and tokens
 
 r = requests.get("http://www.hackroom.io",  headers=headers)
 with open("output", "w") as f:
@@ -75,6 +80,7 @@ def response_handler(r, *args, **kwargs):
     if number == 24:
         escape_room_session = r.cookies["_escape_room_session"]
 
+# downloading images and getting their real value basing on image size     
 urls = ["http://www.hackroom.io/images" + "?i=" + str(a) for a in range(25)]
 rs = (grequests.get(u, cookies={"_escape_room_session" : escape_room_session, "__cfduid" : ctfuid},
                       headers=headers, callback=response_handler) for u in urls)
@@ -89,6 +95,7 @@ print(elapsed)
 elapsed = time.time()
 
 
+#this part is math magic that is supposed to solve the challange
 
 def tryCreateMatrix(columns, rows):
     for i in range(5):
@@ -121,6 +128,7 @@ for i in range(5):
 solves = [(a, b, c, d, e) for a in csolve[0] for b in csolve[1] for c in csolve[2] for d in csolve[3] for e in csolve[4]
           if (correspondingRowsExist([a, b, c, d, e], rsolve))]
 
+#creating response based on result
 
 answers = []
 for i in range(5):
@@ -130,12 +138,15 @@ for i in range(5):
 
 print(time.time() - elapsed)
 
+#sending results
 r = requests.patch("http://www.hackroom.io/game_attempts/",
                    data={"answers[]":answers},
                    cookies={"_escape_room_session" : escape_room_session, "__cfduid" : ctfuid},
                     headers=headers)
 
 escape_room_session = r.cookies["_escape_room_session"]
+
+#sending information for the leaderboard
 
 r = requests.post("http://www.hackroom.io/game_attempts/",
                    data={"email":mail, "name":name, "university":university},
